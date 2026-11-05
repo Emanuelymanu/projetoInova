@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | Lixeiras Inteligentes</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Lixeiras Inteligentes</h1>
+    <div class="topo-usuario">
+      <span id="usuario-nome"></span>
+      <button type="button" id="sair" class="botao-discreto">Sair</button>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <div class="filtros">
+      <label>Zona
+        <select id="filtro-zona"><option value="">Todas</option></select>
+      </label>
+      <label>Período do histórico
+        <select id="filtro-horas">
+          <option value="24">Últimas 24 horas</option>
+          <option value="168">Últimos 7 dias</option>
+          <option value="720">Últimos 30 dias</option>
+        </select>
+      </label>
+      <span id="atualizado-em" class="atualizado-em"></span>
+    </div>
+
+    <p id="erro-dashboard" class="mensagem-erro" role="alert" hidden></p>
+
+    <section class="resumo" aria-label="Resumo">
+      <div class="heroi">
+        <span id="total-cheias" class="heroi-valor">-</span>
+        <span id="rotulo-cheias" class="heroi-rotulo">lixeiras cheias precisam de coleta</span>
+      </div>
+      <dl class="indicadores">
+        <div><dt>Total</dt><dd id="total-lixeiras">-</dd></div>
+        <div><dt>Parciais</dt><dd id="total-parciais">-</dd></div>
+        <div><dt>Vazias</dt><dd id="total-vazias">-</dd></div>
+        <div><dt>Bateria baixa</dt><dd id="total-bateria">-</dd></div>
+        <div><dt>Sem sinal</dt><dd id="total-sem-sinal">-</dd></div>
+      </dl>
+    </section>
+
+    <section class="cartao">
+      <h2>Lixeiras</h2>
+      <div class="tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Lixeira</th>
+              <th scope="col" class="coluna-zona">Zona</th>
+              <th scope="col">Situação</th>
+              <th scope="col" class="coluna-nivel">Nível</th>
+              <th scope="col" class="numero">Bateria</th>
+              <th scope="col">Última leitura</th>
+            </tr>
+          </thead>
+          <tbody id="linhas-lixeiras"></tbody>
+        </table>
+      </div>
+      <p id="sem-lixeiras" class="vazio" hidden>Nenhuma lixeira nesta zona.</p>
+    </section>
+
+    <section class="cartao" id="cartao-historico" hidden>
+      <h2 id="titulo-historico"></h2>
+      <p class="subtitulo">Nível de preenchimento (%) a cada leitura do sensor</p>
+      <div id="grafico" class="grafico"></div>
+      <p id="sem-historico" class="vazio" hidden>Nenhuma leitura neste período.</p>
+      <details id="tabela-historico-detalhes" class="tabela-grafico">
+        <summary>Ver como tabela</summary>
+        <div class="tabela-rolagem tabela-limitada">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Data e hora</th>
+                <th scope="col" class="numero">Nível</th>
+                <th scope="col" class="numero">Bateria</th>
+                <th scope="col" class="numero">Distância</th>
+              </tr>
+            </thead>
+            <tbody id="linhas-historico"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/grafico.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

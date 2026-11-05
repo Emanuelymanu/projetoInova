@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar | Lixeiras Inteligentes</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="pagina-auth">
+  <main class="cartao-auth">
+    <h1>Lixeiras Inteligentes</h1>
+    <p class="subtitulo">Monitoramento do nível das lixeiras em tempo real</p>
+
+    <div class="abas" role="tablist">
+      <button type="button" role="tab" id="aba-login" aria-selected="true" aria-controls="form-login">Entrar</button>
+      <button type="button" role="tab" id="aba-cadastro" aria-selected="false" aria-controls="form-cadastro">Criar conta</button>
+    </div>
+
+    <form id="form-login" role="tabpanel" aria-labelledby="aba-login">
+      <label>E-mail
+        <input type="email" name="email" autocomplete="email" required>
+      </label>
+      <label>Senha
+        <input type="password" name="senha" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="botao-primario">Entrar</button>
+    </form>
+
+    <form id="form-cadastro" role="tabpanel" aria-labelledby="aba-cadastro" hidden>
+      <label>Nome
+        <input type="text" name="nome" autocomplete="name" minlength="2" maxlength="100" required>
+      </label>
+      <label>E-mail
+        <input type="email" name="email" autocomplete="email" maxlength="100" required>
+      </label>
+      <label>Senha
+        <input type="password" name="senha" autocomplete="new-password" minlength="8" maxlength="72" required>
+        <small>Pelo menos 8 caracteres</small>
+      </label>
+      <button type="submit" class="botao-primario">Criar conta</button>
+    </form>
+
+    <p id="mensagem-erro" class="mensagem-erro" role="alert" hidden></p>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>
