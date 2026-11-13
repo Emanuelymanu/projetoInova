@@ -19,6 +19,7 @@ export const cores = {
   verdeFundo: '#0F2E22',
   verdeBorda: '#1E5B3D',
   azulClaro: '#7DB4FF',
+  azulBorda: '#2A4A86',
 } as const;
 
 export const fontes = {

@@ -4,7 +4,7 @@ import { sequelize } from '../config/database';
 import { HistoricoTelemetria, Lixeira, Zona } from '../models';
 import { AppError } from '../utils/AppError';
 import { classificarSituacao } from '../utils/nivel';
-import type { CriarLixeiraInput } from '../validators/lixeira.validator';
+import type { AtualizarLixeiraInput, CriarLixeiraInput } from '../validators/lixeira.validator';
 
 const INCLUIR_ZONA = { model: Zona, as: 'zona', attributes: ['id', 'nome'] };
 
@@ -13,6 +13,8 @@ export function paraLixeiraDTO(lixeira: Lixeira) {
   return {
     id: lixeira.id,
     codigo_identificador: lixeira.codigo_identificador,
+    epc: lixeira.epc,
+    endereco: lixeira.endereco,
     // O driver devolve DECIMAL como string.
     latitude: Number(lixeira.latitude),
     longitude: Number(lixeira.longitude),
@@ -25,6 +27,7 @@ export function paraLixeiraDTO(lixeira: Lixeira) {
     status: lixeira.status,
     zona: lixeira.zona ? { id: lixeira.zona.id, nome: lixeira.zona.nome } : null,
     ultima_atualizacao: lixeira.ultima_atualizacao,
+    ultimo_esvaziamento: lixeira.ultimo_esvaziamento,
   };
 }
 
@@ -48,15 +51,38 @@ export async function buscarLixeira(id: number) {
 export async function criarLixeira(dados: CriarLixeiraInput) {
   const { id } = await Lixeira.create({
     ...dados,
+    endereco: dados.endereco ?? null,
+    epc: dados.epc ?? null,
+    ultimo_esvaziamento: null,
     zona_id: dados.zona_id ?? null,
-    // axis-order explícito: para o SRID 4326 o MySQL assume latitude primeiro.
-    localizacao: sequelize.fn(
-      'ST_PointFromText',
-      `POINT(${dados.longitude} ${dados.latitude})`,
-      4326,
-      'axis-order=long-lat',
-    ),
+    localizacao: pontoGeografico(dados.latitude, dados.longitude),
   });
+  return buscarLixeira(id);
+}
+
+function pontoGeografico(latitude: number, longitude: number) {
+  // axis-order explícito: para o SRID 4326 o MySQL assume latitude primeiro.
+  return sequelize.fn(
+    'ST_PointFromText',
+    `POINT(${longitude} ${latitude})`,
+    4326,
+    'axis-order=long-lat',
+  );
+}
+
+export async function atualizarLixeira(id: number, dados: AtualizarLixeiraInput) {
+  const lixeira = await Lixeira.findByPk(id);
+  if (!lixeira) throw new AppError(404, 'Lixeira não encontrada');
+
+  const { latitude, longitude, ...resto } = dados;
+  const mudancas: Record<string, unknown> = { ...resto };
+  if (latitude !== undefined && longitude !== undefined) {
+    Object.assign(mudancas, { latitude, longitude, localizacao: pontoGeografico(latitude, longitude) });
+  }
+  lixeira.set(mudancas);
+  // Reenvia a data atual: sem ela, o ON UPDATE do MySQL trataria a edição como leitura do sensor.
+  lixeira.changed('ultima_atualizacao', true);
+  await lixeira.save();
   return buscarLixeira(id);
 }
 

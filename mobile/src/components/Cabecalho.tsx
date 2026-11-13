@@ -5,13 +5,27 @@ import { cores } from '@/theme';
 import { Texto } from './Texto';
 
 /** Topo das telas: título grande, subtítulo e um conteúdo opcional embaixo (ex.: filtros). */
-export function Cabecalho({ titulo, subtitulo, children }: { titulo: string; subtitulo?: string; children?: ReactNode }) {
+export function Cabecalho({
+  titulo,
+  subtitulo,
+  acao,
+  children,
+}: {
+  titulo: string;
+  subtitulo?: string;
+  /** Botão no canto direito do título. */
+  acao?: ReactNode;
+  children?: ReactNode;
+}) {
   const { top } = useSafeAreaInsets();
   return (
     <View style={[estilos.topo, { paddingTop: top + 20 }]}>
-      <Texto peso="bold" tamanho={26}>
-        {titulo}
-      </Texto>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Texto peso="bold" tamanho={26} style={{ flex: 1 }}>
+          {titulo}
+        </Texto>
+        {acao}
+      </View>
       {subtitulo && (
         <Texto tamanho={13} cor={cores.textoSuave} style={{ marginTop: 2 }}>
           {subtitulo}

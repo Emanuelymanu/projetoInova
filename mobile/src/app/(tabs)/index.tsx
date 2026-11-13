@@ -12,7 +12,8 @@ import { dataCurta, prioridadeDe, tempoDesde } from '@/utils/formatar';
 
 export default function Inicio() {
   const { sessao } = useSessao();
-  const { lixeiras, coletadas, carregando, erro, atualizadoEm, atualizar, emAndamento, iniciar } = useRota();
+  const { nomeRota, lixeiras, coletadas, carregando, erro, atualizadoEm, atualizar, emAndamento, iniciar } = useRota();
+  const semRota = !carregando && !erro && nomeRota === null;
   const { top } = useSafeAreaInsets();
   const [atualizando, setAtualizando] = useState(false);
   const agora = useRelogio();
@@ -30,7 +31,7 @@ export default function Inicio() {
   }
 
   function aoIniciar() {
-    iniciar();
+    void iniciar();
     router.navigate('/rota');
   }
 
@@ -62,15 +63,29 @@ export default function Inicio() {
       <View style={estilos.corpo}>
         <View style={estilos.cartao}>
           <View style={estilos.linhaTitulo}>
-            <Texto peso="bold" tamanho={18}>
-              Rota de hoje
-            </Texto>
+            <View style={{ flex: 1 }}>
+              <Texto peso="bold" tamanho={18}>
+                Rota de hoje
+              </Texto>
+              {nomeRota && (
+                <Texto tamanho={13} cor={cores.azulClaro}>
+                  {nomeRota}
+                </Texto>
+              )}
+            </View>
             <Texto tamanho={13} cor={cores.textoSuave}>
               {dataCurta(new Date(agora))}
             </Texto>
           </View>
           {carregando && lixeiras.length === 0 ? (
             <ActivityIndicator color={cores.primaria} style={{ paddingVertical: 24 }} />
+          ) : semRota ? (
+            <View style={estilos.semRota}>
+              <Ionicons name="calendar-outline" size={28} color={cores.textoFraco} />
+              <Texto cor={cores.textoSuave} style={{ textAlign: 'center' }}>
+                Nenhuma rota atribuída para hoje.{'\n'}Quando o gestor montar a sua rota, ela aparece aqui.
+              </Texto>
+            </View>
           ) : (
             <View style={estilos.numeros}>
               <Numero valor={lixeiras.length} rotulo="Total" cor={cores.texto} />
@@ -100,6 +115,8 @@ export default function Inicio() {
           </Pressable>
         )}
 
+        {!semRota && (
+          <>
         <View style={estilos.linhaTitulo}>
           <Texto peso="bold" tamanho={16}>
             Mapa da rota
@@ -122,6 +139,8 @@ export default function Inicio() {
             {emAndamento ? 'Continuar rota' : 'Iniciar rota'}
           </Texto>
         </Pressable>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -238,6 +257,7 @@ const estilos = StyleSheet.create({
   },
   linhaTitulo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   numeros: { flexDirection: 'row', gap: 10 },
+  semRota: { alignItems: 'center', gap: 8, paddingVertical: 12 },
   numero: {
     flex: 1,
     alignItems: 'center',

@@ -16,6 +16,7 @@ export class Usuario extends Model<InferAttributes<Usuario>, InferCreationAttrib
   declare email: string;
   declare senha_hash: string;
   declare tipo: TipoUsuario;
+  declare ativo: CreationOptional<boolean>;
   declare criado_em: CreationOptional<Date>;
 }
 
@@ -26,6 +27,7 @@ Usuario.init(
     email: { type: DataTypes.STRING(100), allowNull: false, unique: true },
     senha_hash: { type: DataTypes.STRING(255), allowNull: false },
     tipo: { type: DataTypes.ENUM(...TIPOS_USUARIO), allowNull: false },
+    ativo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     criado_em: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   },
   { sequelize, tableName: 'usuarios', timestamps: false },

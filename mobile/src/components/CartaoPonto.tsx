@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
-import type { Lixeira } from '@/services/tipos';
+import type { Confirmacao, Lixeira } from '@/services/tipos';
 import { cores } from '@/theme';
 import { ESTILO_PRIORIDADE, prioridadeDe, tempoDesde } from '@/utils/formatar';
 import { BarraNivel } from './BarraNivel';
@@ -11,11 +11,15 @@ interface Props {
   lixeira: Lixeira;
   ordem: number;
   coletada: boolean;
+  /** Como a coleta foi registrada; aparece no selo "Coletada". */
+  confirmacao?: Confirmacao;
   distancia: string | null;
   aoAlternar: () => void;
 }
 
-export function CartaoPonto({ lixeira, ordem, coletada, distancia, aoAlternar }: Props) {
+const ORIGEM: Record<Confirmacao, string> = { RFID: 'tag', SENSOR: 'sensor', MANUAL: 'manual' };
+
+export function CartaoPonto({ lixeira, ordem, coletada, confirmacao, distancia, aoAlternar }: Props) {
   const estilo = ESTILO_PRIORIDADE[prioridadeDe(lixeira)];
   const nivel = lixeira.nivel_preenchimento_pct;
 
@@ -36,11 +40,11 @@ export function CartaoPonto({ lixeira, ordem, coletada, distancia, aoAlternar }:
             {lixeira.codigo_identificador}
           </Texto>
           <Texto tamanho={12} cor={cores.textoSuave} numberOfLines={1}>
-            {lixeira.zona?.nome ?? 'Sem zona'} · {lixeira.capacidade_litros} L
+            {lixeira.endereco ?? lixeira.zona?.nome ?? 'Sem zona'} · {lixeira.capacidade_litros} L
           </Texto>
         </View>
         {coletada ? (
-          <Selo texto="Coletada" cor={cores.verde} fundo={cores.verdeFundo} borda={cores.verdeBorda} ponto />
+          <Selo texto={confirmacao ? `Coletada · ${ORIGEM[confirmacao]}` : 'Coletada'} cor={cores.verde} fundo={cores.verdeFundo} borda={cores.verdeBorda} ponto />
         ) : (
           <Selo texto={estilo.rotulo} cor={estilo.cor} fundo={estilo.fundo} borda={estilo.borda} ponto />
         )}

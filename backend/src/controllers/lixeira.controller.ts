@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import * as lixeiraService from '../services/lixeira.service';
 import {
+  atualizarLixeiraSchema,
   criarLixeiraSchema,
   filtroZonaSchema,
   historicoQuerySchema,
@@ -26,4 +27,10 @@ export async function historico(req: Request, res: Response) {
   const { id } = idParamSchema.parse(req.params);
   const { horas } = historicoQuerySchema.parse(req.query);
   res.json(await lixeiraService.listarHistorico(id, horas));
+}
+
+export async function atualizar(req: Request, res: Response) {
+  const { id } = idParamSchema.parse(req.params);
+  const dados = atualizarLixeiraSchema.parse(req.body);
+  res.json(await lixeiraService.atualizarLixeira(id, dados));
 }

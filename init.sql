@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS zonas (
 CREATE TABLE IF NOT EXISTS lixeiras (
     id INT AUTO_INCREMENT PRIMARY KEY,
     codigo_identificador VARCHAR(50) UNIQUE NOT NULL,
+    epc VARCHAR(64) NULL UNIQUE, -- código da tag UHF RFID
+    endereco VARCHAR(150) NULL,
     latitude DECIMAL(10, 8) NOT NULL,
     longitude DECIMAL(11, 8) NOT NULL,
     localizacao POINT SRID 4326 NOT NULL,
@@ -24,6 +26,7 @@ CREATE TABLE IF NOT EXISTS lixeiras (
     status ENUM('OPERACIONAL', 'MANUTENCAO', 'DESATIVADO') DEFAULT 'OPERACIONAL',
     zona_id INT,
     ultima_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ultimo_esvaziamento DATETIME NULL,
     FOREIGN KEY (zona_id) REFERENCES zonas(id) ON DELETE SET NULL,
     SPATIAL INDEX(localizacao)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -46,6 +49,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(100) UNIQUE NOT NULL,
     senha_hash VARCHAR(255) NOT NULL,
     tipo ENUM('GESTOR', 'MOTORISTA') NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -57,6 +61,8 @@ CREATE TABLE IF NOT EXISTS rotas (
     status ENUM('PLANEJADA', 'EM_ANDAMENTO', 'CONCLUIDA', 'CANCELADA') DEFAULT 'PLANEJADA',
     distancia_total_km DECIMAL(6,2),
     tempo_estimado_min INT,
+    iniciada_em DATETIME NULL,
+    concluida_em DATETIME NULL,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (motorista_id) REFERENCES usuarios(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -69,6 +75,11 @@ CREATE TABLE IF NOT EXISTS rota_paradas (
     ordem_visita INT NOT NULL,
     coletado BOOLEAN DEFAULT FALSE,
     data_hora_coleta DATETIME,
+    confirmacao ENUM('RFID', 'SENSOR', 'MANUAL') NULL,
+    epc_lido VARCHAR(64) NULL,
+    nivel_na_coleta INT NULL,
+    esvaziada_em DATETIME NULL,
+    UNIQUE INDEX rota_lixeira_unica (rota_id, lixeira_id),
     FOREIGN KEY (rota_id) REFERENCES rotas(id) ON DELETE CASCADE,
     FOREIGN KEY (lixeira_id) REFERENCES lixeiras(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

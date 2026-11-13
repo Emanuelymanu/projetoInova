@@ -26,6 +26,9 @@ export function lixeirasDemo(): Lixeira[] {
   return PONTOS.map(([codigo, zona, nivel, bateria, latitude, longitude], i) => ({
     id: i + 1,
     codigo_identificador: codigo,
+    // Tags de demonstração: DEMO0001, DEMO0002…
+    epc: `DEMO${String(i + 1).padStart(4, '0')}`,
+    endereco: null,
     latitude,
     longitude,
     capacidade_litros: 240,

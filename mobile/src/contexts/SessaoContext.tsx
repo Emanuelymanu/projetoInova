@@ -63,6 +63,7 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
         metodo: 'POST',
         corpo: { email, senha },
       });
+      if (usuario.tipo !== 'MOTORISTA') throw new ErroApi('Este app é dos motoristas. Gestores usam o painel web.');
       await salvar({ token, usuario, demo: false });
     },
     [salvar],

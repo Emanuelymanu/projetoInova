@@ -14,6 +14,9 @@ export type StatusLixeira = 'OPERACIONAL' | 'MANUTENCAO' | 'DESATIVADO';
 export class Lixeira extends Model<InferAttributes<Lixeira>, InferCreationAttributes<Lixeira>> {
   declare id: CreationOptional<number>;
   declare codigo_identificador: string;
+  /** Código da tag UHF RFID colada na lixeira. */
+  declare epc: string | null;
+  declare endereco: string | null;
   declare latitude: number;
   declare longitude: number;
   declare localizacao: unknown;
@@ -24,6 +27,7 @@ export class Lixeira extends Model<InferAttributes<Lixeira>, InferCreationAttrib
   declare status: CreationOptional<StatusLixeira>;
   declare zona_id: number | null;
   declare ultima_atualizacao: CreationOptional<Date>;
+  declare ultimo_esvaziamento: Date | null;
 
   declare zona?: NonAttribute<Zona>;
 }
@@ -32,6 +36,8 @@ Lixeira.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     codigo_identificador: { type: DataTypes.STRING(50), allowNull: false, unique: true },
+    epc: { type: DataTypes.STRING(64), unique: true },
+    endereco: { type: DataTypes.STRING(150) },
     latitude: { type: DataTypes.DECIMAL(10, 8), allowNull: false },
     longitude: { type: DataTypes.DECIMAL(11, 8), allowNull: false },
     localizacao: { type: DataTypes.GEOMETRY('POINT', 4326), allowNull: false },
@@ -45,6 +51,7 @@ Lixeira.init(
     },
     zona_id: { type: DataTypes.INTEGER },
     ultima_atualizacao: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+    ultimo_esvaziamento: { type: DataTypes.DATE },
   },
   {
     sequelize,

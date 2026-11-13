@@ -30,6 +30,7 @@ export async function login({ email, senha }: LoginInput) {
 
   // Mesma mensagem nos dois casos para não revelar quais e-mails existem.
   if (!usuario || !senhaCorreta) throw new AppError(401, 'E-mail ou senha incorretos');
+  if (!usuario.ativo) throw new AppError(403, 'Conta desativada. Fale com o gestor.');
 
   return { token: gerarToken(usuario), usuario: paraUsuarioDTO(usuario) };
 }

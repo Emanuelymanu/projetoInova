@@ -7,6 +7,7 @@ export interface Usuario {
   nome: string;
   email: string;
   tipo: TipoUsuario;
+  ativo?: boolean;
   criado_em: string;
 }
 
@@ -16,6 +17,9 @@ export type StatusLixeira = 'OPERACIONAL' | 'MANUTENCAO' | 'DESATIVADO';
 export interface Lixeira {
   id: number;
   codigo_identificador: string;
+  /** Código da tag UHF RFID colada na lixeira. */
+  epc?: string | null;
+  endereco: string | null;
   latitude: number;
   longitude: number;
   capacidade_litros: number;
@@ -29,7 +33,24 @@ export interface Lixeira {
   ultima_atualizacao: string;
 }
 
-/** Rota finalizada no aparelho. O backend ainda não tem endpoint de rotas. */
+/** Como a coleta foi registrada: leitura da tag, queda de nível no sensor ou toque no app. */
+export type Confirmacao = 'RFID' | 'SENSOR' | 'MANUAL';
+
+export type StatusRota = 'PLANEJADA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
+
+/** Rota como a API devolve (backend/src/services/rota.service.ts). */
+export interface RotaApi {
+  id: number;
+  nome: string;
+  data_rota: string;
+  status: StatusRota;
+  concluida_em: string | null;
+  total_paradas: number;
+  coletadas: number;
+  paradas: { id: number; ordem_visita: number; coletado: boolean; confirmacao: Confirmacao | null; lixeira: Lixeira | null }[];
+}
+
+/** Resumo de uma rota concluída, usado no histórico. */
 export interface RotaConcluida {
   id: string;
   nome: string;

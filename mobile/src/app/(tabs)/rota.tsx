@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { Cabecalho } from '@/components/Cabecalho';
 import { CartaoPonto } from '@/components/CartaoPonto';
+import { LeitorTag } from '@/components/LeitorTag';
 import { Texto } from '@/components/Texto';
 import { useRota } from '@/contexts/RotaContext';
 import { cores } from '@/theme';
@@ -18,7 +19,8 @@ const FILTROS = [
 type Filtro = (typeof FILTROS)[number]['id'];
 
 export default function Rota() {
-  const { lixeiras, coletadas, alternarColeta, finalizar, carregando, erro, atualizar } = useRota();
+  const { nomeRota, lixeiras, coletadas, confirmacoes, alternarColeta, finalizar, carregando, erro, atualizar } = useRota();
+  const [leitorAberto, setLeitorAberto] = useState(false);
   // O filtro fica no parâmetro da rota, para o Início poder abrir a tela já filtrada
   // (ex.: o alerta de "coleta urgente" abre em "Prioridade").
   const params = useLocalSearchParams<{ filtro?: string }>();
@@ -26,8 +28,7 @@ export default function Rota() {
   const setFiltro = (id: Filtro) => router.setParams({ filtro: id });
   const [atualizando, setAtualizando] = useState(false);
 
-  // A ordem segue a prioridade (o backend já devolve do mais cheio para o mais vazio).
-  // A distância é até o ponto anterior da rota.
+  // A ordem é a de visita definida pelo gestor. A distância é até o ponto anterior da rota.
   const pontos = useMemo(
     () =>
       lixeiras.map((lixeira, i) => ({
@@ -59,8 +60,8 @@ export default function Rota() {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Finalizar',
-          onPress: () => {
-            finalizar();
+          onPress: async () => {
+            await finalizar();
             router.navigate('/historico');
           },
         },
@@ -76,7 +77,24 @@ export default function Rota() {
 
   return (
     <View style={{ flex: 1, backgroundColor: cores.fundo }}>
-      <Cabecalho titulo="Pontos da rota" subtitulo={`${lixeiras.length} lixeiras · ordenadas por prioridade`}>
+      <Cabecalho
+        titulo="Pontos da rota"
+        subtitulo={nomeRota ? `${nomeRota} · ${lixeiras.length} lixeiras na ordem de visita` : 'Nenhuma rota atribuída'}
+        acao={
+          lixeiras.length > 0 && (
+            <Pressable
+              onPress={() => setLeitorAberto(true)}
+              style={({ pressed }) => [estilos.botaoTag, pressed && { opacity: 0.8 }]}
+              accessibilityRole="button"
+            >
+              <Ionicons name="scan" size={18} color="#FFFFFF" />
+              <Texto peso="bold" tamanho={14}>
+                Ler tag
+              </Texto>
+            </Pressable>
+          )
+        }
+      >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filtros} style={{ marginHorizontal: -20 }}>
           {FILTROS.map((f) => {
             const ativo = filtro === f.id;
@@ -102,6 +120,7 @@ export default function Rota() {
             ordem={item.ordem}
             distancia={item.distancia}
             coletada={coletadas.has(item.lixeira.id)}
+            confirmacao={confirmacoes.get(item.lixeira.id)}
             aoAlternar={() => alternarColeta(item.lixeira.id)}
           />
         )}
@@ -112,7 +131,7 @@ export default function Rota() {
             <View style={estilos.vazio}>
               <Ionicons name={erro ? 'cloud-offline-outline' : 'checkmark-done-circle-outline'} size={44} color={cores.textoFraco} />
               <Texto cor={cores.textoSuave} style={{ textAlign: 'center' }}>
-                {erro ?? (filtro === 'todas' ? 'Nenhuma lixeira cadastrada.' : 'Nenhum ponto neste filtro.')}
+                {erro ?? (filtro !== 'todas' ? 'Nenhum ponto neste filtro.' : nomeRota ? 'Esta rota não tem pontos.' : 'Nenhuma rota atribuída para hoje.')}
               </Texto>
             </View>
           )
@@ -127,6 +146,7 @@ export default function Rota() {
           </Texto>
         </Pressable>
       )}
+      <LeitorTag visivel={leitorAberto} aoFechar={() => setLeitorAberto(false)} />
     </View>
   );
 }
@@ -140,6 +160,15 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: cores.borda,
     backgroundColor: cores.cartao,
+  },
+  botaoTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: cores.primaria,
   },
   filtroAtivo: { backgroundColor: cores.primaria, borderColor: cores.primaria },
   vazio: { alignItems: 'center', gap: 10, marginTop: 48, paddingHorizontal: 24 },
